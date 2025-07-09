@@ -7,14 +7,6 @@ use App\Http\Controllers\Controller;
 
 class BaseController extends Controller
 {
-    /**
-     * Send a success JSON response.
-     *
-     * @param  mixed  $result
-     * @param  string  $message
-     * @param  int  $code
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function sendResponse($result, string $message, int $code = 200): JsonResponse
     {
         return response()->json([
@@ -24,14 +16,6 @@ class BaseController extends Controller
         ], $code);
     }
 
-    /**
-     * Send an error JSON response.
-     *
-     * @param  string  $error
-     * @param  array  $errorMessages
-     * @param  int  $code
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function sendError(string $error, array $errorMessages = [], int $code = 400): JsonResponse
     {
         $response = [

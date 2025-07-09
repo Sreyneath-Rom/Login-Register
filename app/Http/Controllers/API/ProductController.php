@@ -1,98 +1,62 @@
 <?php
 
-
-
 namespace App\Http\Controllers\API;
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller as BaseController;
+use App\Http\Controllers\API\BaseController;
 use App\Models\Product;
 use App\Http\Resources\ProductResource;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 
-
 class ProductController extends BaseController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(): JsonResponse
     {
         $products = Product::all();
-        return $this->sendResponse(ProductResource::collection($products), 'Products retrieved successfully.');
+        return $this->sendResponse(ProductResource::collection($products), 'Products retrieved successfully.', 200);
     }
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
 
     public function store(Request $request): JsonResponse
     {
-        $input = $request->all();
-        $validator = Validator::make($input, [
-            'name' => 'required',
-            'detail' => 'required'
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'detail' => 'required|string',
         ]);
 
         if ($validator->fails()) {
-            return $this->sendError('Validation Error.', $validator->errors());
+            return $this->sendError('Validation Error.', $validator->errors()->toArray(), 422);
         }
-        $product = Product::create($input);
 
-        return $this->sendResponse(new ProductResource($product), 'Product created successfully.');
+        $product = Product::create($request->only('name', 'detail'));
+
+        return $this->sendResponse(new ProductResource($product), 'Product created successfully.', 201);
     }
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
 
-    public function show($id): JsonResponse
+    public function show(Product $product): JsonResponse
     {
-        $product = Product::find($id);
-        if (is_null($product)) {
-            return $this->sendError('Product not found.');
-        }
-        return $this->sendResponse(new ProductResource($product), 'Product retrieved successfully.');
+        return $this->sendResponse(new ProductResource($product), 'Product retrieved successfully.', 200);
     }
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function update(Request $request, Product $product): JsonResponse
     {
-        $input = $request->all();
-        $validator = Validator::make($input, [
-            'name' => 'required',
-            'detail' => 'required'
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'detail' => 'required|string',
         ]);
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error.', $validator->errors());
-        }
-        $product->name = $input['name'];
-        $product->detail = $input['detail'];
-        $product->save();
 
-        return $this->sendResponse(new ProductResource($product), 'Product updated successfully.');
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors()->toArray(), 422);
+        }
+
+        $product->update($request->only('name', 'detail'));
+
+        return $this->sendResponse(new ProductResource($product), 'Product updated successfully.', 200);
     }
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function destroy(Product $product): JsonResponse
     {
         $product->delete();
-        return $this->sendResponse([], 'Product deleted successfully.');
+        return $this->sendResponse([], 'Product deleted successfully.', 200);
     }
 }
